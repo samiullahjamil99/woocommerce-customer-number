@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Customer Numbering
+Plugin Name: WooCommerce Customer Numbering
 Author: Samiullah Jamil
 Version: 1.0.0
 Author URI: https://www.samiullahjaml.com/
