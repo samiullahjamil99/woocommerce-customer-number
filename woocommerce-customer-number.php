@@ -6,6 +6,8 @@ Version: 1.0.0
 Author URI: https://www.samiullahjaml.com/
 */
 
+define( 'WCN_DIR', WP_PLUGIN_DIR.'/woocommerce-customer-number' );
+
 function custom_register_additional_fields() {
 	?>
 	<p class="form-row">
