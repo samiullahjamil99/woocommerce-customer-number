@@ -20,6 +20,7 @@ function custom_register_additional_fields() {
 add_action('woocommerce_register_form','custom_register_additional_fields');
 
 function wcn_add_frontend_scripts() {
-	wp_enqueue_script('register-fields',plugin_dir_url( WCN_DIR ) . '/woocommerce-customer-number/assets/js/wcn-register-fields.js',array('jquery-core'),'',true);
+	if (is_account_page())
+		wp_enqueue_script('register-fields',plugin_dir_url( WCN_DIR ) . '/woocommerce-customer-number/assets/js/wcn-register-fields.js',array('jquery-core'),'',true);
 }
 add_action('wp_enqueue_scripts','wcn_add_frontend_scripts');
