@@ -29,3 +29,10 @@ function wcn_add_frontend_scripts() {
 		wp_enqueue_script('register-fields',plugin_dir_url( WCN_DIR ) . '/woocommerce-customer-number/assets/js/wcn-register-fields.js',array('jquery-core'),'',true);
 }
 add_action('wp_enqueue_scripts','wcn_add_frontend_scripts');
+
+function wcm_save_extra_register_fields($customer_id) {
+	if ( isset( $_POST['customer_number'] ) ) {
+		update_user_meta( $customer_id, 'customer_number', sanitize_text_field( $_POST['customer_number'] ) );
+	}
+}
+add_action( 'woocommerce_created_customer', 'wcm_save_extra_register_fields' );
