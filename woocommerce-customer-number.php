@@ -38,9 +38,9 @@ function wcn_validate_extra_register_fields( $username, $email, $validation_erro
 }
 add_action( 'woocommerce_register_post', 'wcn_validate_extra_register_fields', 10, 3 );
 
-function wcm_save_extra_register_fields($customer_id) {
+function wcn_save_extra_register_fields($customer_id) {
 	if ( isset( $_POST['customer_number'] ) ) {
 		update_user_meta( $customer_id, 'customer_number', sanitize_text_field( $_POST['customer_number'] ) );
 	}
 }
-add_action( 'woocommerce_created_customer', 'wcm_save_extra_register_fields' );
+add_action( 'woocommerce_created_customer', 'wcn_save_extra_register_fields' );
