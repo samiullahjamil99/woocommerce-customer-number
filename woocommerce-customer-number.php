@@ -60,8 +60,86 @@ add_action( 'admin_menu', 'my_admin_menu' );
 
 function wcn_customer_numbers_admin_page_contents() {
 		?>
-			<h1>
-				<?php esc_html_e( 'Welcome to my custom admin page.', 'my-plugin-textdomain' ); ?>
-			</h1>
+			<div class="wcn-page-container">
+				<section class="wcn-add-new-debit">
+					<h1 class="wcn-section-title">Add New Debit</h1>
+					<form id="wcnAddDebit" enctype="multipart/form-data" method="post">
+						<div class="wcn-input-group">
+							<label for="customer_number">Customer Number *</label>
+							<input type="text" name="customer_number" id="customer_number">
+						</div>
+						<div class="wcn-input-group">
+							<label for="debit_amount">Amount to Pay *</label>
+							<input type="number" name="debit_amount" id="debit_amount">
+						</div>
+						<div class="wcn-input-group">
+							<label for="customer_invoice">Customer Invoice (optional)</label>
+							<input type="file" name="customer_invoice" id="customer_invoice" accept="image/*">
+						</div>
+						<div class="wcn-submit-btn">
+							<input type="submit" value="Submit">
+						</div>
+					</form>
+				</section>
+				<section class="wcn-show-customers">
+
+				</section>
+			</div>
+			<style>
+			.wcn-page-container {
+				padding: 30px;
+			}
+			section.wcn-add-new-debit {
+				background-color: white;
+		    padding: 40px 50px;
+		    border-radius: 10px;
+		    box-shadow: 0px 3px 6px rgb(0 0 0 / 16%);
+				max-width: 500px;
+				margin:auto;
+			}
+			section h1.wcn-section-title {
+				margin-top: 0;
+		    margin-bottom: 30px;
+		    text-align: center;
+			}
+			section.wcn-add-new-debit form {
+		    width: 100%;
+		    margin: auto;
+			}
+			section.wcn-add-new-debit .wcn-input-group {
+				display: flex;
+		    margin-bottom: 10px;
+		    align-items: center;
+		    justify-content: space-between;
+			}
+			section.wcn-add-new-debit .wcn-input-group input {
+				width:50%;
+			}
+			section.wcn-add-new-debit .wcn-submit-btn {
+				margin-top: 30px;
+			}
+			section.wcn-add-new-debit .wcn-submit-btn input {
+				padding: 7px 30px;
+		    background-color: green;
+		    border: none;
+		    outline: none;
+		    color: white;
+		    font-size: 20px;
+		    border-radius: 6px;
+		    cursor: pointer;
+			}
+			@media only screen and (max-width: 767px) {
+				section.wcn-add-new-debit .wcn-input-group {
+					flex-direction: column;
+					align-items: flex-start;
+				}
+				section.wcn-add-new-debit .wcn-input-group label {
+					margin-bottom: 10px;
+				}
+				section.wcn-add-new-debit .wcn-input-group input {
+					width:100%;
+				}
+			}
+			</style>
 		<?php
 }
