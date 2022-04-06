@@ -44,3 +44,24 @@ function wcn_save_extra_register_fields($customer_id) {
 	}
 }
 add_action( 'woocommerce_created_customer', 'wcn_save_extra_register_fields' );
+
+function my_admin_menu() {
+		add_menu_page(
+			__( 'Customer Numbers', 'wcn' ),
+			__( 'Customer Numbers', 'wcn' ),
+			'manage_options',
+			'customer-numbers',
+			'wcn_customer_numbers_admin_page_contents',
+			'dashicons-schedule',
+			3
+		);
+}
+add_action( 'admin_menu', 'my_admin_menu' );
+
+function wcn_customer_numbers_admin_page_contents() {
+		?>
+			<h1>
+				<?php esc_html_e( 'Welcome to my custom admin page.', 'my-plugin-textdomain' ); ?>
+			</h1>
+		<?php
+}
