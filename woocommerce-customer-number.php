@@ -59,6 +59,37 @@ function my_admin_menu() {
 add_action( 'admin_menu', 'my_admin_menu' );
 
 function wcn_customer_numbers_admin_page_contents() {
+		if (isset($_POST["action"]) && $_POST["action"] === "adddebit") {
+			$customer = wcn_debit_data_validation($_POST);
+			if ($customer) {
+				$order = new WC_Order();
+				$order->set_customer_id($customer->ID);
+				$order->set_currency( get_woocommerce_currency() );
+				$order->set_payment_method();
+				$item = new WC_Order_Item_Fee();
+				$item->set_props(
+					array(
+						'name'      => 'Invoice',
+						'tax_class' => 0,
+						'amount'    => floatval($_POST["debit_amount"]),
+						'total'     => floatval($_POST["debit_amount"]),
+					)
+				);
+				$order->add_item( $item );
+				$order->calculate_totals();
+				if (file_exists($_FILES['customer_invoice']['tmp_name']) && is_uploaded_file($_FILES['customer_invoice']['tmp_name'])) {
+					$uploadedfile = $_FILES['customer_invoice'];
+					$upload_overrides = array( 'test_form' => false );
+					$movefile = wp_handle_upload( $uploadedfile, $upload_overrides );
+					if ( $movefile ) {
+					  //var_dump( $movefile);
+						$order->update_meta_data( '_invoice_image', $movefile['url'] );
+					}
+				}
+				$order_id = $order->save();
+				WC()->mailer()->customer_invoice($order);
+			}
+		}
 		?>
 			<div class="wcn-page-container">
 				<section class="wcn-add-new-debit">
@@ -69,7 +100,7 @@ function wcn_customer_numbers_admin_page_contents() {
 							<input type="text" name="customer_number" id="customer_number">
 						</div>
 						<div class="wcn-input-group">
-							<label for="debit_amount">Amount to Pay *</label>
+							<label for="debit_amount">Amount to Pay (<?php echo get_woocommerce_currency_symbol(); ?>) *</label>
 							<input type="number" name="debit_amount" id="debit_amount">
 						</div>
 						<div class="wcn-input-group">
@@ -79,6 +110,7 @@ function wcn_customer_numbers_admin_page_contents() {
 						<div class="wcn-submit-btn">
 							<input type="submit" value="Submit">
 						</div>
+						<input type="hidden" name="action" value="adddebit">
 					</form>
 				</section>
 				<section class="wcn-show-customers">
@@ -143,3 +175,36 @@ function wcn_customer_numbers_admin_page_contents() {
 			</style>
 		<?php
 }
+function wcn_debit_data_validation($data) {
+	$customerNumber = $data["customer_number"];
+	$debitAmount = $data["debit_amount"];
+	$user = reset(
+	 get_users(
+	  array(
+	   'meta_key' => 'customer_number',
+	   'meta_value' => $customerNumber,
+	   'number' => 1
+	  )
+	 )
+	);
+	if($user && !empty($debitAmount)) {
+		return $user;
+	}
+	return false;
+}
+function wcn_invoice_image($order) {
+	//$orderid = $order->id;
+	$image = get_post_meta($order->get_id(),'_invoice_image',true);
+	?>
+	<p><?php echo $image; ?></p>
+	<?php
+}
+add_action('woocommerce_email_customer_details','wcn_invoice_image',100);
+function wcn_display_invoice_data_in_admin( $order ){  ?>
+    <div class="order_data_column">
+        <h4><?php _e( 'Extra Details' ); ?></h4>
+        <?php
+            echo '<p><strong>' . __( 'Order Invoice Image' ) . ':</strong> <a href="'. get_post_meta( $order->id, '_invoice_image', true ) .'" target="_blank">' . get_post_meta( $order->id, '_invoice_image', true ) . '</a></p>'; ?>
+    </div>
+<?php }
+add_action( 'woocommerce_admin_order_data_after_order_details', 'wcn_display_invoice_data_in_admin' );
