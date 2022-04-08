@@ -23,6 +23,14 @@ function custom_register_additional_fields() {
 	<?php
 }
 add_action('woocommerce_register_form','custom_register_additional_fields');
+function wcn_show_customer_number_on_dashboard() {
+	global $current_user;
+	$customer_number = get_user_meta($current_user->ID,'customer_number',true);
+	?>
+	<p>Your Customer Number is <strong><?php echo $customer_number; ?></strong>.</p>
+	<?php
+}
+add_action('woocommerce_account_dashboard','wcn_show_customer_number_on_dashboard');
 
 function wcn_add_frontend_scripts() {
 	if (is_account_page())
