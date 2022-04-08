@@ -37,10 +37,20 @@ function wcn_validate_extra_register_fields( $username, $email, $validation_erro
 	return $validation_errors;
 }
 add_action( 'woocommerce_register_post', 'wcn_validate_extra_register_fields', 10, 3 );
-
 function wcn_save_extra_register_fields($customer_id) {
 	if ( isset( $_POST['customer_number'] ) ) {
 		update_user_meta( $customer_id, 'customer_number', sanitize_text_field( $_POST['customer_number'] ) );
 	}
+	$email = WC()->mailer()->emails['WCN_Email_Customer_New_Account'];
+	$email->trigger($customer_id);
 }
-add_action( 'woocommerce_created_customer', 'wcn_save_extra_register_fields' );
+add_action( 'woocommerce_created_customer', 'wcn_save_extra_register_fields',10,1 );
+function wcn_add_emails_hooks($emailClass) {
+	remove_action( 'woocommerce_created_customer_notification', array( $emailClass, 'customer_new_account' ), 10, 3 );
+}
+add_action('woocommerce_email','wcn_add_emails_hooks',10,1);
+function wcn_add_account_creation_email_template($emails) {
+	$emails['WCN_Email_Customer_New_Account'] = include WCN_DIR . '/inc/class-wcn-email-customer-new-account.php';
+	return $emails;
+}
+add_filter('woocommerce_email_classes','wcn_add_account_creation_email_template',10,1);
