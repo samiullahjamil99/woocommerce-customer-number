@@ -120,9 +120,13 @@ function my_admin_menu() {
 add_action( 'admin_menu', 'my_admin_menu' );
 
 function wcn_customer_numbers_admin_page_contents() {
+	$error = false;
+	$success = false;
 		if (isset($_POST["action"]) && $_POST["action"] === "adddebit") {
+			$error = true;
 			$customer = wcn_debit_data_validation($_POST);
 			if ($customer) {
+				$error = false;
 				$order = new WC_Order();
 				$order->set_customer_id($customer->ID);
 				$order->set_currency( get_woocommerce_currency() );
@@ -137,6 +141,8 @@ function wcn_customer_numbers_admin_page_contents() {
 					)
 				);
 				$order->add_item( $item );
+				if (!empty($_POST["customer_notes"]))
+					$order->update_meta_data( '_customer_notes', $_POST["customer_notes"] );
 				$order->calculate_totals();
 				if (file_exists($_FILES['customer_invoice']['tmp_name']) && is_uploaded_file($_FILES['customer_invoice']['tmp_name'])) {
 					$uploadedfile = $_FILES['customer_invoice'];
@@ -149,24 +155,35 @@ function wcn_customer_numbers_admin_page_contents() {
 				}
 				$order_id = $order->save();
 				WC()->mailer()->customer_invoice($order);
+				$success = true;
 			}
 		}
 		?>
 			<div class="wcn-page-container">
 				<section class="wcn-add-new-debit">
 					<h1 class="wcn-section-title">Add New Debit</h1>
+					<?php if ($error): ?>
+					<p class="error" style="color:red;"><b>Error:</b> Customer Number not found</p>
+					<?php endif; ?>
+					<?php if ($success): ?>
+					<p class="success" style="color:green;"><b>Success:</b> Invoice Sent to Customer</p>
+					<?php endif; ?>
 					<form id="wcnAddDebit" enctype="multipart/form-data" method="post">
 						<div class="wcn-input-group">
 							<label for="customer_number">Customer Number *</label>
-							<input type="text" name="customer_number" id="customer_number">
+							<input type="text" required name="customer_number" id="customer_number">
 						</div>
 						<div class="wcn-input-group">
 							<label for="debit_amount">Amount to Pay (<?php echo get_woocommerce_currency_symbol(); ?>) *</label>
-							<input type="number" name="debit_amount" id="debit_amount">
+							<input type="number" required name="debit_amount" id="debit_amount">
 						</div>
 						<div class="wcn-input-group">
 							<label for="customer_invoice">Customer Invoice (optional)</label>
 							<input type="file" name="customer_invoice" id="customer_invoice" accept="image/*">
+						</div>
+						<div class="wcn-input-group">
+							<label for="customer_notes">Customer Notes (optional)</label>
+							<textarea name="customer_notes" id="customer_notes"></textarea>
 						</div>
 						<div class="wcn-submit-btn">
 							<input type="submit" value="Submit">
@@ -175,7 +192,15 @@ function wcn_customer_numbers_admin_page_contents() {
 					</form>
 				</section>
 				<section class="wcn-show-customers">
-
+					<h1 class="wcn-section-title">Customers Overview</h1>
+					<form id="overview_filters">
+						<input type="text" name="cn_search" placeholder="Search by Customer Number">
+						<input type="submit" value="Filter">
+					</form>
+					<div id="customers_overview">
+					</div>
+					<span class="spinner" id="customers_overview_loader"></span>
+					<button type="button" id="loadmore_customers">Load More</button>
 				</section>
 			</div>
 			<style>
@@ -205,7 +230,7 @@ function wcn_customer_numbers_admin_page_contents() {
 		    align-items: center;
 		    justify-content: space-between;
 			}
-			section.wcn-add-new-debit .wcn-input-group input {
+			section.wcn-add-new-debit .wcn-input-group input, section.wcn-add-new-debit .wcn-input-group textarea {
 				width:50%;
 			}
 			section.wcn-add-new-debit .wcn-submit-btn {
@@ -220,6 +245,28 @@ function wcn_customer_numbers_admin_page_contents() {
 		    font-size: 20px;
 		    border-radius: 6px;
 		    cursor: pointer;
+			}
+			section.wcn-show-customers {
+				max-width: 700px;
+    		margin: auto;
+				margin-top: 25px;
+		    background-color: white;
+		    border-radius: 10px;
+		    box-shadow: 0px 3px 6px rgb(0 0 0 / 16%);
+		    padding: 40px 50px;
+			}
+			section.wcn-show-customers table {
+				width: 100%;
+			}
+			section.wcn-show-customers form#overview_filters {
+				margin-bottom: 15px;
+			}
+			section.wcn-show-customers #customers_overview {
+				margin-bottom: 15px;
+				text-align: left;
+			}
+			button#loadmore_customers {
+				display: none;
 			}
 			@media only screen and (max-width: 767px) {
 				section.wcn-add-new-debit .wcn-input-group {
@@ -238,7 +285,6 @@ function wcn_customer_numbers_admin_page_contents() {
 }
 function wcn_debit_data_validation($data) {
 	$customerNumber = $data["customer_number"];
-	$debitAmount = $data["debit_amount"];
 	$user = reset(
 	 get_users(
 	  array(
@@ -248,24 +294,161 @@ function wcn_debit_data_validation($data) {
 	  )
 	 )
 	);
-	if($user && !empty($debitAmount)) {
+	if($user) {
 		return $user;
 	}
 	return false;
 }
 function wcn_invoice_image($order) {
 	//$orderid = $order->id;
-	$image = get_post_meta($order->get_id(),'_invoice_image',true);
+	$notes = get_post_meta($order->get_id(),'_customer_notes',true);
+	if ($notes):
 	?>
+	<h2>Customer Notes</h2>
+	<p><?php echo $notes; ?></p>
+	<?php
+	endif;
+	$image = get_post_meta($order->get_id(),'_invoice_image',true);
+	if ($image):
+	?>
+	<h2>Invoice Image</h2>
 	<p><?php echo $image; ?></p>
 	<?php
+	endif;
 }
 add_action('woocommerce_email_customer_details','wcn_invoice_image',100);
 function wcn_display_invoice_data_in_admin( $order ){  ?>
     <div class="order_data_column">
         <h4><?php _e( 'Extra Details' ); ?></h4>
         <?php
-            echo '<p><strong>' . __( 'Order Invoice Image' ) . ':</strong> <a href="'. get_post_meta( $order->id, '_invoice_image', true ) .'" target="_blank">' . get_post_meta( $order->id, '_invoice_image', true ) . '</a></p>'; ?>
+            echo '<p><strong>' . __( 'Order Invoice Image' ) . ':</strong> <a href="'. get_post_meta( $order->id, '_invoice_image', true ) .'" target="_blank">' . get_post_meta( $order->id, '_invoice_image', true ) . '</a></p>';
+						echo '<p><strong>' . __( 'Customer Notes' ) . ':</strong> ' . get_post_meta( $order->id, '_customer_notes', true ) . '</p>'; ?>
     </div>
 <?php }
 add_action( 'woocommerce_admin_order_data_after_order_details', 'wcn_display_invoice_data_in_admin' );
+
+function show_customer_numbers() {
+	$pagenumber = intval($_POST['paged']);
+	$postsperpage = intval($_POST['posts_per_page']);
+	$filters = $_POST['filters'];
+	$cn_search = $filters['cn_search'];
+	$result = array();
+	$args = array(
+		'paged' => $pagenumber,
+		'number' => $postsperpage,
+		'role' => array( 'customer' ),
+		'meta_query' => array(
+			'relation' => 'AND',
+		)
+	);
+	if (!empty($cn_search)) {
+		$args['meta_query']['cnsearch'] = array(
+			'key' => 'customer_number',
+			'value' => $cn_search,
+			'type' => 'numeric',
+			'compare' => '=',
+		);
+	}
+	$args = wp_parse_args( $args );
+  //$args['count_total'] = false;
+  $user_search = new WP_User_Query( $args );
+  $users = (array) $user_search->get_results();
+	if ($pagenumber == 1) {
+		$result['total_users'] = $user_search->get_total();
+	}
+	ob_start();
+	if ($pagenumber == 1):
+	?>
+	<table>
+		<thead>
+			<tr>
+				<th>User ID</th>
+				<th>User Email</th>
+				<th>Customer Number</th>
+			</tr>
+		</thead>
+		<tbody>
+	<?php
+	endif;
+	foreach ($users as $user): ?>
+		<?php
+		$customer_number = get_user_meta($user->ID,'customer_number',true);
+		?>
+	<tr>
+		<td><?php echo $user->ID; ?></td>
+		<td><?php echo $user->user_email; ?></td>
+		<td><?php echo $customer_number; ?></td>
+	</tr>
+	<?php endforeach;
+	if ($pagenumber == 1):
+	?>
+	</tbody>
+	</table>
+	<?php
+	endif;
+	$result['html'] = ob_get_clean();
+	echo json_encode($result);
+	wp_die();
+}
+add_action('wp_ajax_show_customer_numbers','show_customer_numbers');
+
+function show_customer_numbers_script() { ?>
+	<script type="text/javascript" >
+	var pageNumber = 1;
+	var totalusers = 0;
+	var posts_per_page = 10;
+	var filters_form = document.getElementById("overview_filters");
+	var filters = {};
+	jQuery(document).ready(function($) {
+		load_users(false);
+		function load_users() {
+			var data = {
+				'paged': pageNumber,
+				'posts_per_page': posts_per_page,
+				'action': 'show_customer_numbers',
+				'filters': filters,
+			};
+			$("#customers_overview_loader").addClass('is-active');
+			jQuery.ajax({
+				url: ajaxurl,
+				type: "POST",
+				data: data,
+				dataType: 'json',
+				success: function(response) {
+					if (response.total_users)
+						totalusers = response.total_users;
+					if (pageNumber == 1) {
+						$("#customers_overview").html(response.html);
+					} else {
+						$("#customers_overview table tbody").append(response.html);
+					}
+					$("#customers_overview_loader").removeClass('is-active');
+					if (totalusers > 0) {
+						//console.log(totalusers);
+						var remaining_customers = totalusers - (pageNumber * posts_per_page);
+						if (remaining_customers > 0) {
+							$("button#loadmore_customers").show();
+						} else {
+							$("button#loadmore_customers").hide();
+						}
+					}
+				}
+			});
+		}
+		$("button#loadmore_customers").on('click',function() {
+			pageNumber = pageNumber + 1;
+			load_users();
+		});
+		$("#overview_filters").submit(function(e) {
+			e.preventDefault();
+			pageNumber = 1;
+			$("button#loadmore_customers").hide();
+			filters = {
+				'cn_search': filters_form.cn_search.value,
+			}
+			load_users();
+		});
+	});
+	</script> <?php
+}
+add_action( 'admin_footer', 'show_customer_numbers_script' ); // Write our JS below here
