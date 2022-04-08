@@ -9,18 +9,6 @@ Author URI: https://www.samiullahjaml.com/
 define( 'WCN_DIR', WP_PLUGIN_DIR.'/woocommerce-customer-number' );
 
 function custom_register_additional_fields() {
-	$users = get_users(
-		array(
-			'role' => array(
-				'customer',
-			),
-			'meta_key' => 'customer_number',
-			'orderby' => 'meta_value_num',
-			'order'	=> 'DESC',
-		)
-	);
-	$max_cn = get_user_meta($users[0]->ID,'customer_number',true);
-	print_r($max_cn);
 	?>
 	<p class="form-row">
 		<label class="woocommerce-form__label woocommerce-form__label-for-checkbox woocommerce-form-customer_number_present">
@@ -46,14 +34,62 @@ function wcn_validate_extra_register_fields( $username, $email, $validation_erro
 	if (isset($_POST['customer_number_present']) && $_POST['customer_number_present'] === "yes") {
 		if ( isset( $_POST['customer_number'] ) && !is_numeric( $_POST['customer_number'] ) ) {
 			$validation_errors->add( 'customer_number_error', __( 'Customer Number must be a Numerical Value!', 'wcn' ) );
+		} else {
+			$user = reset(
+			 get_users(
+			  array(
+			   'meta_key' => 'customer_number',
+			   'meta_value' => $_POST['customer_number'],
+			   'number' => 1
+			  )
+			 )
+			);
+			if ($user) {
+				$validation_errors->add( 'customer_number_error', __( 'This Number is already assigned to Someone!', 'wcn' ) );
+			}
 		}
 	}
 	return $validation_errors;
 }
 add_action( 'woocommerce_register_post', 'wcn_validate_extra_register_fields', 10, 3 );
 function wcn_save_extra_register_fields($customer_id) {
-	if ( isset( $_POST['customer_number'] ) ) {
-		update_user_meta( $customer_id, 'customer_number', sanitize_text_field( $_POST['customer_number'] ) );
+	$customer_number = '';
+	if ( isset( $_POST['customer_number'] ) && !empty($_POST['customer_number']) ) {
+		$customer_number = $_POST['customer_number'];
+	} else {
+		$user = reset(get_users(
+			array(
+				'role' => array(
+					'customer',
+				),
+				'meta_key' => 'customer_number',
+				'orderby' => 'meta_value_num',
+				'order'	=> 'DESC',
+				'meta_query' => array(
+					'relation' => 'AND',
+					array(
+							'key' => 'customer_number',
+							'compare' => 'EXISTS'
+					),
+					array(
+							'key' => 'customer_number',
+							'compare' => '>=',
+							'value' => '4300',
+							'type' => 'NUMERIC',
+					)
+				),
+			)
+		));
+		if ($user) {
+			$max_cn = get_user_meta($user->ID,'customer_number',true);
+			$new_cn = intval($max_cn) + 1;
+		} else {
+			$new_cn = 4300;
+		}
+		$customer_number = strval($new_cn);
+	}
+	if ($customer_number !== '') {
+		update_user_meta( $customer_id, 'customer_number', sanitize_text_field( $customer_number ) );
 	}
 	$email = WC()->mailer()->emails['WCN_Email_Customer_New_Account'];
 	$email->trigger($customer_id);

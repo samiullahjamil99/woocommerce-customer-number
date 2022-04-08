@@ -26,9 +26,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 	<?php // If the password has not been set by the user during the sign up process, send them a link to set a new password ?>
 	<p><a href="<?php echo esc_attr( $set_password_url ); ?>"><?php printf( esc_html__( 'Click here to set your new password.', 'woocommerce' ) ); ?></a></p>
 <?php endif; ?>
-<?php if ($customer_number): ?>
 <p><?php printf( esc_html__( 'Your customer number is %s, please remember the number well this serves to our communication and keep the email with the Number well.' ), '<strong>' . esc_html( $customer_number ) . '</strong>' ); ?></p>
-<?php endif; ?>
 <?php
 /**
  * Show user-defined additional content - this is set in each email's settings.
