@@ -114,7 +114,11 @@ function wcn_customer_numbers_admin_page_contents() {
 					</form>
 				</section>
 				<section class="wcn-show-customers">
-
+					<h1 class="wcn-section-title">Customers Overview</h1>
+					<div id="customers_overview">
+					</div>
+					<span class="spinner" id="customers_overview_loader"></span>
+					<button type="button" id="loadmore_customers">Load More</button>
 				</section>
 			</div>
 			<style>
@@ -159,6 +163,19 @@ function wcn_customer_numbers_admin_page_contents() {
 		    font-size: 20px;
 		    border-radius: 6px;
 		    cursor: pointer;
+			}
+			section.wcn-show-customers {
+				margin-top: 25px;
+		    background-color: white;
+		    border-radius: 10px;
+		    box-shadow: 0px 3px 6px rgb(0 0 0 / 16%);
+		    padding: 40px 50px;
+			}
+			section.wcn-show-customers table {
+				width: 100%;
+			}
+			button#loadmore_customers {
+				display: none;
 			}
 			@media only screen and (max-width: 767px) {
 				section.wcn-add-new-debit .wcn-input-group {
@@ -208,3 +225,102 @@ function wcn_display_invoice_data_in_admin( $order ){  ?>
     </div>
 <?php }
 add_action( 'woocommerce_admin_order_data_after_order_details', 'wcn_display_invoice_data_in_admin' );
+
+function show_customer_numbers() {
+	$pagenumber = intval($_POST['paged']);
+	$postsperpage = intval($_POST['posts_per_page']);
+	$result = array();
+	if ($pagenumber == 1) {
+		$result['total_users'] = count_users();
+	}
+	$users = get_users(
+		array(
+			'paged' => $pagenumber,
+			'number' => $postsperpage,
+			'role' => array( 'customer' ),
+		)
+	);
+	ob_start();
+	if ($pagenumber == 1):
+	?>
+	<table>
+		<thead>
+			<tr>
+				<th>User ID</th>
+				<th>User Email</th>
+				<th>Customer Number</th>
+			</tr>
+		</thead>
+		<tbody>
+	<?php
+	endif;
+	foreach ($users as $user): ?>
+		<?php
+		$customer_number = get_user_meta($user->ID,'customer_number',true);
+		?>
+	<tr>
+		<td><?php echo $user->ID; ?></td>
+		<td><?php echo $user->user_email; ?></td>
+		<td><?php echo $customer_number; ?></td>
+	</tr>
+	<?php endforeach;
+	if ($pagenumber == 1):
+	?>
+	</tbody>
+	</table>
+	<?php
+	endif;
+	$result['html'] = ob_get_clean();
+	echo json_encode($result);
+	wp_die();
+}
+add_action('wp_ajax_show_customer_numbers','show_customer_numbers');
+
+function show_customer_numbers_script() { ?>
+	<script type="text/javascript" >
+	var pageNumber = 1;
+	var totalusers = 0;
+	var posts_per_page = 1;
+	var data = {
+		'paged': pageNumber,
+		'posts_per_page': posts_per_page,
+		'action': 'show_customer_numbers',
+	};
+	jQuery(document).ready(function($) {
+		load_users();
+		function load_users() {
+			$("#customers_overview_loader").addClass('is-active');
+			jQuery.ajax({
+				url: ajaxurl,
+				type: "POST",
+				data: data,
+				dataType: 'json',
+				success: function(response) {
+					if (response.total_users)
+						totalusers = response.total_users.avail_roles.customer;
+					if (pageNumber == 1) {
+						$("#customers_overview").html(response.html);
+					} else {
+						$("#customers_overview table tbody").append(response.html);
+					}
+					$("#customers_overview_loader").removeClass('is-active');
+					if (totalusers > 0) {
+						var remaining_customers = totalusers - (pageNumber * posts_per_page);
+						if (remaining_customers > 0) {
+							$("button#loadmore_customers").show();
+						} else {
+							$("button#loadmore_customers").hide();
+						}
+					}
+				}
+			});
+		}
+		$("button#loadmore_customers").on('click',function() {
+			pageNumber = pageNumber + 1;
+			data.paged = pageNumber;
+			load_users();
+		});
+	});
+	</script> <?php
+}
+add_action( 'admin_footer', 'show_customer_numbers_script' ); // Write our JS below here
