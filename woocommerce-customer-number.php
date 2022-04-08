@@ -176,6 +176,10 @@ function wcn_customer_numbers_admin_page_contents() {
 				</section>
 				<section class="wcn-show-customers">
 					<h1 class="wcn-section-title">Customers Overview</h1>
+					<form id="overview_filters">
+						<input type="text" name="cn_search" placeholder="Search by Customer Number">
+						<input type="submit" value="Filter">
+					</form>
 					<div id="customers_overview">
 					</div>
 					<span class="spinner" id="customers_overview_loader"></span>
@@ -226,6 +230,8 @@ function wcn_customer_numbers_admin_page_contents() {
 		    cursor: pointer;
 			}
 			section.wcn-show-customers {
+				max-width: 700px;
+    		margin: auto;
 				margin-top: 25px;
 		    background-color: white;
 		    border-radius: 10px;
@@ -234,6 +240,13 @@ function wcn_customer_numbers_admin_page_contents() {
 			}
 			section.wcn-show-customers table {
 				width: 100%;
+			}
+			section.wcn-show-customers form#overview_filters {
+				margin-bottom: 15px;
+			}
+			section.wcn-show-customers #customers_overview {
+				margin-bottom: 15px;
+				text-align: left;
 			}
 			button#loadmore_customers {
 				display: none;
@@ -290,17 +303,32 @@ add_action( 'woocommerce_admin_order_data_after_order_details', 'wcn_display_inv
 function show_customer_numbers() {
 	$pagenumber = intval($_POST['paged']);
 	$postsperpage = intval($_POST['posts_per_page']);
+	$filters = $_POST['filters'];
+	$cn_search = $filters['cn_search'];
 	$result = array();
-	if ($pagenumber == 1) {
-		$result['total_users'] = count_users();
-	}
-	$users = get_users(
-		array(
-			'paged' => $pagenumber,
-			'number' => $postsperpage,
-			'role' => array( 'customer' ),
+	$args = array(
+		'paged' => $pagenumber,
+		'number' => $postsperpage,
+		'role' => array( 'customer' ),
+		'meta_query' => array(
+			'relation' => 'AND',
 		)
 	);
+	if (!empty($cn_search)) {
+		$args['meta_query']['cnsearch'] = array(
+			'key' => 'customer_number',
+			'value' => $cn_search,
+			'type' => 'numeric',
+			'compare' => '=',
+		);
+	}
+	$args = wp_parse_args( $args );
+  //$args['count_total'] = false;
+  $user_search = new WP_User_Query( $args );
+  $users = (array) $user_search->get_results();
+	if ($pagenumber == 1) {
+		$result['total_users'] = $user_search->get_total();
+	}
 	ob_start();
 	if ($pagenumber == 1):
 	?>
@@ -341,15 +369,18 @@ function show_customer_numbers_script() { ?>
 	<script type="text/javascript" >
 	var pageNumber = 1;
 	var totalusers = 0;
-	var posts_per_page = 1;
-	var data = {
-		'paged': pageNumber,
-		'posts_per_page': posts_per_page,
-		'action': 'show_customer_numbers',
-	};
+	var posts_per_page = 10;
+	var filters_form = document.getElementById("overview_filters");
+	var filters = {};
 	jQuery(document).ready(function($) {
-		load_users();
+		load_users(false);
 		function load_users() {
+			var data = {
+				'paged': pageNumber,
+				'posts_per_page': posts_per_page,
+				'action': 'show_customer_numbers',
+				'filters': filters,
+			};
 			$("#customers_overview_loader").addClass('is-active');
 			jQuery.ajax({
 				url: ajaxurl,
@@ -358,7 +389,7 @@ function show_customer_numbers_script() { ?>
 				dataType: 'json',
 				success: function(response) {
 					if (response.total_users)
-						totalusers = response.total_users.avail_roles.customer;
+						totalusers = response.total_users;
 					if (pageNumber == 1) {
 						$("#customers_overview").html(response.html);
 					} else {
@@ -366,6 +397,7 @@ function show_customer_numbers_script() { ?>
 					}
 					$("#customers_overview_loader").removeClass('is-active');
 					if (totalusers > 0) {
+						//console.log(totalusers);
 						var remaining_customers = totalusers - (pageNumber * posts_per_page);
 						if (remaining_customers > 0) {
 							$("button#loadmore_customers").show();
@@ -378,7 +410,15 @@ function show_customer_numbers_script() { ?>
 		}
 		$("button#loadmore_customers").on('click',function() {
 			pageNumber = pageNumber + 1;
-			data.paged = pageNumber;
+			load_users();
+		});
+		$("#overview_filters").submit(function(e) {
+			e.preventDefault();
+			pageNumber = 1;
+			$("button#loadmore_customers").hide();
+			filters = {
+				'cn_search': filters_form.cn_search.value,
+			}
 			load_users();
 		});
 	});
