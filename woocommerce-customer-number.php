@@ -12,12 +12,12 @@ function custom_register_additional_fields() {
 	?>
 	<p class="form-row">
 		<label class="woocommerce-form__label woocommerce-form__label-for-checkbox woocommerce-form-customer_number_present">
-			<input class="woocommerce-form__input woocommerce-form__input-checkbox" type="checkbox" name="customer_number_present" id="customer_number_present" value="yes" /> <span><?php esc_html_e( 'I already have my Customer Number', 'wcn' ); ?></span>
+			<input class="woocommerce-form__input woocommerce-form__input-checkbox" type="checkbox" name="customer_number_present" id="customer_number_present" value="yes" /> <span><?php esc_html_e( 'Ich habe bereits meine Kundennummer', 'wcn' ); ?></span>
 		</label>
 	</p>
-	<p class="customer-number-error" style="display:none;color:red;"><b>Error:</b> Please Enter the Number First</p>
+	<p class="customer-number-error" style="display:none;color:red;"><b>Fehler:</b> Bitte geben Sie zuerst die Nummer ein</p>
 	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide customer-number-container" style="display:none;">
-		<label for="reg_customer_number"><?php esc_html_e( 'Customer Number', 'wcn' ); ?></label>
+		<label for="reg_customer_number"><?php esc_html_e( 'Kundennummer', 'wcn' ); ?></label>
 		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="customer_number" id="reg_customer_number" value="<?php echo ( ! empty( $_POST['customer_number'] ) ) ? esc_attr( wp_unslash( $_POST['customer_number'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
 	</p>
 	<?php
@@ -27,7 +27,7 @@ function wcn_show_customer_number_on_dashboard() {
 	global $current_user;
 	$customer_number = get_user_meta($current_user->ID,'customer_number',true);
 	?>
-	<p>Your Customer Number is <strong><?php echo $customer_number; ?></strong>.</p>
+	<p>Ihre Kundennummer lautet <strong><?php echo $customer_number; ?></strong>.</p>
 	<?php
 }
 add_action('woocommerce_account_dashboard','wcn_show_customer_number_on_dashboard');
@@ -41,7 +41,7 @@ add_action('wp_enqueue_scripts','wcn_add_frontend_scripts');
 function wcn_validate_extra_register_fields( $username, $email, $validation_errors ) {
 	if (isset($_POST['customer_number_present']) && $_POST['customer_number_present'] === "yes") {
 		if ( isset( $_POST['customer_number'] ) && !is_numeric( $_POST['customer_number'] ) ) {
-			$validation_errors->add( 'customer_number_error', __( 'Customer Number must be a Numerical Value!', 'wcn' ) );
+			$validation_errors->add( 'customer_number_error', __( 'Die Kundennummer muss ein numerischer Wert sein!', 'wcn' ) );
 		} else {
 			$user = reset(
 			 get_users(
@@ -53,7 +53,7 @@ function wcn_validate_extra_register_fields( $username, $email, $validation_erro
 			 )
 			);
 			if ($user) {
-				$validation_errors->add( 'customer_number_error', __( 'This Number is already assigned to Someone!', 'wcn' ) );
+				$validation_errors->add( 'customer_number_error', __( 'Diese Nummer ist bereits jemandem zugewiesen!', 'wcn' ) );
 			}
 		}
 	}
@@ -312,14 +312,14 @@ function wcn_invoice_image($order) {
 	$notes = get_post_meta($order->get_id(),'_customer_notes',true);
 	if ($notes):
 	?>
-	<h2>Customer Notes</h2>
+	<h2>Anmerkungen für Kunden</h2>
 	<p><?php echo $notes; ?></p>
 	<?php
 	endif;
 	$image = get_post_meta($order->get_id(),'_invoice_image',true);
 	if ($image):
 	?>
-	<h2>Invoice Image</h2>
+	<h2>Bild der Rechnung</h2>
 	<p><?php echo $image; ?></p>
 	<?php
 	endif;

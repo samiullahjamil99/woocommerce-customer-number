@@ -19,14 +19,14 @@ defined( 'ABSPATH' ) || exit;
 do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
 <?php /* translators: %s: Customer username */ ?>
-<p><?php printf( esc_html__( 'Hi %s,', 'woocommerce' ), esc_html( $user_login ) ); ?></p>
+<p><?php printf( esc_html__( 'Hallo %s,', 'woocommerce' ), esc_html( $user_login ) ); ?></p>
 <?php /* translators: %1$s: Site title, %2$s: Username, %3$s: My account link */ ?>
-<p><?php printf( esc_html__( 'Thanks for creating an account on %1$s. Your username is %2$s. You can access your account area to view orders, change your password, and more at: %3$s', 'woocommerce' ), esc_html( $blogname ), '<strong>' . esc_html( $user_login ) . '</strong>', make_clickable( esc_url( wc_get_page_permalink( 'myaccount' ) ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
+<p><?php printf( esc_html__( 'Vielen Dank für die Erstellung eines Kontos auf %1$s. Ihr Benutzername ist %2$s. Sie können auf Ihren Kontobereich zugreifen, um Bestellungen einzusehen, Ihr Passwort zu ändern und vieles mehr unter: %3$s', 'woocommerce' ), esc_html( $blogname ), '<strong>' . esc_html( $user_login ) . '</strong>', make_clickable( esc_url( wc_get_page_permalink( 'myaccount' ) ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
 <?php if ( 'yes' === get_option( 'woocommerce_registration_generate_password' ) && $password_generated && $set_password_url ) : ?>
 	<?php // If the password has not been set by the user during the sign up process, send them a link to set a new password ?>
-	<p><a href="<?php echo esc_attr( $set_password_url ); ?>"><?php printf( esc_html__( 'Click here to set your new password.', 'woocommerce' ) ); ?></a></p>
+	<p><a href="<?php echo esc_attr( $set_password_url ); ?>"><?php printf( esc_html__( 'Klicken Sie hier, um Ihr neues Passwort festzulegen.', 'woocommerce' ) ); ?></a></p>
 <?php endif; ?>
-<p><?php printf( esc_html__( 'Your customer number is %s, please remember the number well this serves to our communication and keep the email with the Number well.' ), '<strong>' . esc_html( $customer_number ) . '</strong>' ); ?></p>
+<p><?php printf( esc_html__( 'Ihre Kundennummer ist %s, bitte merken Sie sich die Nummer gut, dies dient unserer Kommunikation und bewahren Sie die Email mit der Nummer gut auf.' ), '<strong>' . esc_html( $customer_number ) . '</strong>' ); ?></p>
 <?php
 /**
  * Show user-defined additional content - this is set in each email's settings.
