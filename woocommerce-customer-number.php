@@ -49,6 +49,11 @@ function woocommerce_edit_my_account_page() {
 						'default' => 'fb',
             'required'    => true,
         ),
+				'social_media_name' => array(
+					'type'	=> 'text',
+					'label'	=> __('Your Facebook or Instagram Profile Name','wcn'),
+					'required' => true,
+				)
     ) );
 }
 
@@ -112,6 +117,10 @@ function wcn_validate_extra_register_fields( $username, $email, $validation_erro
 			if ($user) {
 				$validation_errors->add( 'customer_number_error', __( 'This Number is already assigned to Someone!', 'wcn' ) );
 			}
+		}
+	} else {
+		if (!isset($_POST['social_media_name']) || empty($_POST['social_media_name'])) {
+			$validation_errors->add( 'extra_fields_error', __( 'Please Enter your Facebook or Instagram Profile Name!', 'wcn' ) );
 		}
 	}
 	if (!isset($_POST['first_name']) || empty($_POST['first_name'])) {
@@ -221,6 +230,9 @@ function wcn_save_extra_register_fields($customer_id) {
 	}
 	if (!empty($_POST['postcode'])) {
 		update_user_meta( $customer_id, 'billing_postcode',sanitize_text_field( $_POST['postcode'] ) );
+	}
+	if (!empty($_POST['social_media_name'])) {
+		update_user_meta( $customer_id, 'social_media_name',sanitize_text_field( $_POST['social_media_name'] ) );
 	}
 	$email = WC()->mailer()->emails['WCN_Email_Customer_New_Account'];
 	$email->trigger($customer_id);
