@@ -4,8 +4,10 @@ jQuery(document).ready(function($) {
     var customerNumberCheck = form.elements["customer_number_present"].checked;
     if (customerNumberCheck) {
       $(".customer-number-container").show();
+      $("#social_media_source_field").hide();
     } else {
       $(".customer-number-container").hide();
+      $("#social_media_source_field").show();
     }
     $(".customer-number-error").hide();
   });
