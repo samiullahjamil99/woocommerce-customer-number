@@ -46,6 +46,7 @@ function woocommerce_edit_my_account_page() {
 							'fb' => 'Facebook',
 							'in' => 'Instagram',
 						),
+						'default' => 'fb',
             'required'    => true,
         ),
     ) );
@@ -139,36 +140,64 @@ function wcn_save_extra_register_fields($customer_id) {
 	if ( isset( $_POST['customer_number'] ) && !empty($_POST['customer_number']) ) {
 		$customer_number = $_POST['customer_number'];
 	} else {
-		$user = reset(get_users(
-			array(
-				'role' => array(
-					'customer',
-				),
-				'meta_key' => 'customer_number',
-				'orderby' => 'meta_value_num',
-				'order'	=> 'DESC',
-				'meta_query' => array(
-					'relation' => 'AND',
-					array(
-							'key' => 'customer_number',
-							'compare' => 'EXISTS'
+		if ($_POST['social_media_source'] === 'fb') {
+			$user = reset(get_users(
+				array(
+					'role' => array(
+						'customer',
 					),
-					array(
-							'key' => 'customer_number',
-							'compare' => '>=',
-							'value' => '4300',
-							'type' => 'NUMERIC',
-					)
-				),
-			)
-		));
-		if ($user) {
-			$max_cn = get_user_meta($user->ID,'customer_number',true);
-			$new_cn = intval($max_cn) + 1;
-		} else {
-			$new_cn = 4300;
+					'meta_key' => 'customer_number',
+					'orderby' => 'meta_value_num',
+					'order'	=> 'DESC',
+					'meta_query' => array(
+						'relation' => 'AND',
+						array(
+								'key' => 'customer_number',
+								'compare' => 'EXISTS'
+						),
+						array(
+								'key' => 'customer_number',
+								'compare' => '>=',
+								'value' => '4300',
+								'type' => 'NUMERIC',
+						)
+					),
+				)
+			));
+			if ($user) {
+				$max_cn = get_user_meta($user->ID,'customer_number',true);
+				$new_cn = intval($max_cn) + 1;
+			} else {
+				$new_cn = 4300;
+			}
+			$customer_number = strval($new_cn);
+		} elseif ($_POST['social_media_source'] === 'in') {
+			$user = reset(get_users(
+				array(
+					'role' => array(
+						'customer',
+					),
+					'meta_key' => 'customer_number_in',
+					'orderby' => 'meta_value_num',
+					'order'	=> 'DESC',
+					'meta_query' => array(
+						'relation' => 'AND',
+						array(
+								'key' => 'customer_number_in',
+								'compare' => 'EXISTS'
+						),
+					),
+				)
+			));
+			if ($user) {
+				$max_cn = get_user_meta($user->ID,'customer_number_in',true);
+				$new_cn = intval($max_cn) + 1;
+			} else {
+				$new_cn = 1;
+			}
+			update_user_meta( $customer_id, 'customer_number_in', sanitize_text_field( strval($new_cn) ) );
+			$customer_number = strval($new_cn) . 'IN';
 		}
-		$customer_number = strval($new_cn);
 	}
 	if ($customer_number !== '') {
 		update_user_meta( $customer_id, 'customer_number', sanitize_text_field( $customer_number ) );
