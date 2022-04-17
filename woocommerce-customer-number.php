@@ -7,6 +7,55 @@ Author URI: https://www.samiullahjaml.com/
 */
 
 define( 'WCN_DIR', WP_PLUGIN_DIR.'/woocommerce-customer-number' );
+function custom_register_additional_fields_top() {
+	?>
+	<p class="woocommerce-form-row woocommerce-form-row--first form-row form-row-first">
+		<label for="reg_first_name"><?php esc_html_e( 'First Name', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
+		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="first_name" id="reg_first_name" value="<?php echo ( ! empty( $_POST['first_name'] ) ) ? esc_attr( wp_unslash( $_POST['first_name'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
+	</p>
+	<p class="woocommerce-form-row woocommerce-form-row--last form-row form-row-last">
+		<label for="reg_last_name"><?php esc_html_e( 'Last Name', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
+		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="last_name" id="reg_last_name" value="<?php echo ( ! empty( $_POST['last_name'] ) ) ? esc_attr( wp_unslash( $_POST['last_name'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
+	</p>
+	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+		<label for="reg_phone"><?php esc_html_e( 'Phone', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
+		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="phone" id="reg_phone" value="<?php echo ( ! empty( $_POST['phone'] ) ) ? esc_attr( wp_unslash( $_POST['phone'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
+	</p>
+	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+		<label for="reg_address"><?php esc_html_e( 'Address', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
+		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="address" id="reg_address" value="<?php echo ( ! empty( $_POST['address'] ) ) ? esc_attr( wp_unslash( $_POST['address'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
+	</p>
+	<p class="woocommerce-form-row woocommerce-form-row--first form-row form-row-first">
+		<label for="reg_city"><?php esc_html_e( 'City', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
+		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="city" id="reg_city" value="<?php echo ( ! empty( $_POST['city'] ) ) ? esc_attr( wp_unslash( $_POST['city'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
+	</p>
+	<p class="woocommerce-form-row woocommerce-form-row--last form-row form-row-last">
+		<label for="reg_postcode"><?php esc_html_e( 'Postcode', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
+		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="postcode" id="reg_postcode" value="<?php echo ( ! empty( $_POST['postcode'] ) ) ? esc_attr( wp_unslash( $_POST['postcode'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
+	</p>
+	<?php
+}
+add_action('woocommerce_register_form_start','custom_register_additional_fields_top');
+
+function woocommerce_edit_my_account_page() {
+    return apply_filters( 'woocommerce_forms_field', array(
+        'social_media_source' => array(
+            'type'        => 'radio',
+            'label'       => __( 'How did you find us?', 'wcn' ),
+						'options'			=> array(
+							'fb' => 'Facebook',
+							'in' => 'Instagram',
+						),
+						'default' => 'fb',
+            'required'    => true,
+        ),
+				'social_media_name' => array(
+					'type'	=> 'text',
+					'label'	=> __('Your Facebook or Instagram Profile Name','wcn'),
+					'required' => true,
+				)
+    ) );
+}
 
 function custom_register_additional_fields() {
 	?>
@@ -21,8 +70,21 @@ function custom_register_additional_fields() {
 		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="customer_number" id="reg_customer_number" value="<?php echo ( ! empty( $_POST['customer_number'] ) ) ? esc_attr( wp_unslash( $_POST['customer_number'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
 	</p>
 	<?php
+	$fields = woocommerce_edit_my_account_page();
+	foreach ( $fields as $key => $field_args ) {
+	    woocommerce_form_field( $key, $field_args );
+	}
+	?>
+	<style>
+	.woocommerce form .form-row .woocommerce-input-wrapper label, .woocommerce-page form .form-row .woocommerce-input-wrapper label {
+		display: inline;
+		margin-right:10px;
+		margin-bottom: 10px;
+	}
+	</style>
+	<?php
 }
-add_action('woocommerce_register_form','custom_register_additional_fields');
+add_action('woocommerce_register_form','custom_register_additional_fields',10);
 function wcn_show_customer_number_on_dashboard() {
 	global $current_user;
 	$customer_number = get_user_meta($current_user->ID,'customer_number',true);
@@ -56,6 +118,28 @@ function wcn_validate_extra_register_fields( $username, $email, $validation_erro
 				$validation_errors->add( 'customer_number_error', __( 'Diese Nummer ist bereits jemandem zugewiesen!', 'wcn' ) );
 			}
 		}
+	} else {
+		if (!isset($_POST['social_media_name']) || empty($_POST['social_media_name'])) {
+			$validation_errors->add( 'extra_fields_error', __( 'Please Enter your Facebook or Instagram Profile Name!', 'wcn' ) );
+		}
+	}
+	if (!isset($_POST['first_name']) || empty($_POST['first_name'])) {
+		$validation_errors->add( 'extra_fields_error', __( 'Please Enter your First Name!', 'wcn' ) );
+	}
+	if (!isset($_POST['last_name']) || empty($_POST['last_name'])) {
+		$validation_errors->add( 'extra_fields_error', __( 'Please Enter your Last Name!', 'wcn' ) );
+	}
+	if (!isset($_POST['phone']) || empty($_POST['phone'])) {
+		$validation_errors->add( 'extra_fields_error', __( 'Please Enter your Phone!', 'wcn' ) );
+	}
+	if (!isset($_POST['address']) || empty($_POST['address'])) {
+		$validation_errors->add( 'extra_fields_error', __( 'Please Enter your Address!', 'wcn' ) );
+	}
+	if (!isset($_POST['city']) || empty($_POST['city'])) {
+		$validation_errors->add( 'extra_fields_error', __( 'Please Enter your City!', 'wcn' ) );
+	}
+	if (!isset($_POST['postcode']) || empty($_POST['postcode'])) {
+		$validation_errors->add( 'extra_fields_error', __( 'Please Enter your Postcode!', 'wcn' ) );
 	}
 	return $validation_errors;
 }
@@ -65,39 +149,90 @@ function wcn_save_extra_register_fields($customer_id) {
 	if ( isset( $_POST['customer_number'] ) && !empty($_POST['customer_number']) ) {
 		$customer_number = $_POST['customer_number'];
 	} else {
-		$user = reset(get_users(
-			array(
-				'role' => array(
-					'customer',
-				),
-				'meta_key' => 'customer_number',
-				'orderby' => 'meta_value_num',
-				'order'	=> 'DESC',
-				'meta_query' => array(
-					'relation' => 'AND',
-					array(
-							'key' => 'customer_number',
-							'compare' => 'EXISTS'
+		if ($_POST['social_media_source'] === 'fb') {
+			$user = reset(get_users(
+				array(
+					'role' => array(
+						'customer',
 					),
-					array(
-							'key' => 'customer_number',
-							'compare' => '>=',
-							'value' => '4300',
-							'type' => 'NUMERIC',
-					)
-				),
-			)
-		));
-		if ($user) {
-			$max_cn = get_user_meta($user->ID,'customer_number',true);
-			$new_cn = intval($max_cn) + 1;
-		} else {
-			$new_cn = 4300;
+					'meta_key' => 'customer_number',
+					'orderby' => 'meta_value_num',
+					'order'	=> 'DESC',
+					'meta_query' => array(
+						'relation' => 'AND',
+						array(
+								'key' => 'customer_number',
+								'compare' => 'EXISTS'
+						),
+						array(
+								'key' => 'customer_number',
+								'compare' => '>=',
+								'value' => '4300',
+								'type' => 'NUMERIC',
+						)
+					),
+				)
+			));
+			if ($user) {
+				$max_cn = get_user_meta($user->ID,'customer_number',true);
+				$new_cn = intval($max_cn) + 1;
+			} else {
+				$new_cn = 4300;
+			}
+			$customer_number = strval($new_cn);
+		} elseif ($_POST['social_media_source'] === 'in') {
+			$user = reset(get_users(
+				array(
+					'role' => array(
+						'customer',
+					),
+					'meta_key' => 'customer_number_in',
+					'orderby' => 'meta_value_num',
+					'order'	=> 'DESC',
+					'meta_query' => array(
+						'relation' => 'AND',
+						array(
+								'key' => 'customer_number_in',
+								'compare' => 'EXISTS'
+						),
+					),
+				)
+			));
+			if ($user) {
+				$max_cn = get_user_meta($user->ID,'customer_number_in',true);
+				$new_cn = intval($max_cn) + 1;
+			} else {
+				$new_cn = 1;
+			}
+			update_user_meta( $customer_id, 'customer_number_in', sanitize_text_field( strval($new_cn) ) );
+			$customer_number = strval($new_cn) . 'IN';
 		}
-		$customer_number = strval($new_cn);
 	}
 	if ($customer_number !== '') {
 		update_user_meta( $customer_id, 'customer_number', sanitize_text_field( $customer_number ) );
+	}
+	if (!empty($_POST['first_name'])) {
+		update_user_meta( $customer_id, 'first_name',sanitize_text_field( $_POST['first_name'] ) );
+		update_user_meta( $customer_id, 'billing_first_name',sanitize_text_field( $_POST['first_name'] ) );
+	}
+	if (!empty($_POST['last_name'])) {
+		update_user_meta( $customer_id, 'last_name',sanitize_text_field( $_POST['last_name'] ) );
+		update_user_meta( $customer_id, 'billing_last_name',sanitize_text_field( $_POST['last_name'] ) );
+	}
+	if (!empty($_POST['phone'])) {
+		update_user_meta( $customer_id, 'billing_phone',sanitize_text_field( $_POST['phone'] ) );
+	}
+	if (!empty($_POST['address'])) {
+		update_user_meta( $customer_id, 'billing_address_1',sanitize_text_field( $_POST['address'] ) );
+	}
+	if (!empty($_POST['city'])) {
+		update_user_meta( $customer_id, 'billing_city',sanitize_text_field( $_POST['city'] ) );
+	}
+	if (!empty($_POST['postcode'])) {
+		update_user_meta( $customer_id, 'billing_postcode',sanitize_text_field( $_POST['postcode'] ) );
+	}
+	if (!empty($_POST['social_media_name'])) {
+		update_user_meta( $customer_id, 'social_media_name',sanitize_text_field( $_POST['social_media_name'] ) );
 	}
 	$email = WC()->mailer()->emails['WCN_Email_Customer_New_Account'];
 	$email->trigger($customer_id);
