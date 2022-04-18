@@ -10,27 +10,27 @@ define( 'WCN_DIR', WP_PLUGIN_DIR.'/woocommerce-customer-number' );
 function custom_register_additional_fields_top() {
 	?>
 	<p class="woocommerce-form-row woocommerce-form-row--first form-row form-row-first">
-		<label for="reg_first_name"><?php esc_html_e( 'First Name', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
+		<label for="reg_first_name"><?php esc_html_e( 'Vorname', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
 		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="first_name" id="reg_first_name" value="<?php echo ( ! empty( $_POST['first_name'] ) ) ? esc_attr( wp_unslash( $_POST['first_name'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
 	</p>
 	<p class="woocommerce-form-row woocommerce-form-row--last form-row form-row-last">
-		<label for="reg_last_name"><?php esc_html_e( 'Last Name', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
+		<label for="reg_last_name"><?php esc_html_e( 'Nachname', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
 		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="last_name" id="reg_last_name" value="<?php echo ( ! empty( $_POST['last_name'] ) ) ? esc_attr( wp_unslash( $_POST['last_name'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
 	</p>
 	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-		<label for="reg_phone"><?php esc_html_e( 'Phone', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
+		<label for="reg_phone"><?php esc_html_e( 'Telefonnnumer', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
 		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="phone" id="reg_phone" value="<?php echo ( ! empty( $_POST['phone'] ) ) ? esc_attr( wp_unslash( $_POST['phone'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
 	</p>
 	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-		<label for="reg_address"><?php esc_html_e( 'Address', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
+		<label for="reg_address"><?php esc_html_e( 'Adresse', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
 		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="address" id="reg_address" value="<?php echo ( ! empty( $_POST['address'] ) ) ? esc_attr( wp_unslash( $_POST['address'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
 	</p>
 	<p class="woocommerce-form-row woocommerce-form-row--first form-row form-row-first">
-		<label for="reg_city"><?php esc_html_e( 'City', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
+		<label for="reg_city"><?php esc_html_e( 'Stadt', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
 		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="city" id="reg_city" value="<?php echo ( ! empty( $_POST['city'] ) ) ? esc_attr( wp_unslash( $_POST['city'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
 	</p>
 	<p class="woocommerce-form-row woocommerce-form-row--last form-row form-row-last">
-		<label for="reg_postcode"><?php esc_html_e( 'Postcode', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
+		<label for="reg_postcode"><?php esc_html_e( 'Postleitzahl', 'woocommerce' ); ?>&nbsp;<span class="required">*</span></label>
 		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="postcode" id="reg_postcode" value="<?php echo ( ! empty( $_POST['postcode'] ) ) ? esc_attr( wp_unslash( $_POST['postcode'] ) ) : ''; ?>" /><?php // @codingStandardsIgnoreLine ?>
 	</p>
 	<?php
@@ -41,7 +41,7 @@ function woocommerce_edit_my_account_page() {
     return apply_filters( 'woocommerce_forms_field', array(
         'social_media_source' => array(
             'type'        => 'radio',
-            'label'       => __( 'How did you find us?', 'wcn' ),
+            'label'       => __( 'Wie haben Sie uns gefunden?', 'wcn' ),
 						'options'			=> array(
 							'fb' => 'Facebook',
 							'in' => 'Instagram',
@@ -51,7 +51,7 @@ function woocommerce_edit_my_account_page() {
         ),
 				'social_media_name' => array(
 					'type'	=> 'text',
-					'label'	=> __('Your Facebook or Instagram Profile Name','wcn'),
+					'label'	=> __('Ihr Facebook- oder Instagram-Profilname','wcn'),
 					'required' => true,
 				)
     ) );
@@ -120,26 +120,26 @@ function wcn_validate_extra_register_fields( $username, $email, $validation_erro
 		}
 	} else {
 		if (!isset($_POST['social_media_name']) || empty($_POST['social_media_name'])) {
-			$validation_errors->add( 'extra_fields_error', __( 'Please Enter your Facebook or Instagram Profile Name!', 'wcn' ) );
+			$validation_errors->add( 'extra_fields_error', __( 'Bitte geben Sie Ihren Facebook- oder Instagram-Profilnamen ein!', 'wcn' ) );
 		}
 	}
 	if (!isset($_POST['first_name']) || empty($_POST['first_name'])) {
-		$validation_errors->add( 'extra_fields_error', __( 'Please Enter your First Name!', 'wcn' ) );
+		$validation_errors->add( 'extra_fields_error', __( 'Bitte geben Sie Ihren Vornamen ein!', 'wcn' ) );
 	}
 	if (!isset($_POST['last_name']) || empty($_POST['last_name'])) {
-		$validation_errors->add( 'extra_fields_error', __( 'Please Enter your Last Name!', 'wcn' ) );
+		$validation_errors->add( 'extra_fields_error', __( 'Bitte geben Sie Ihren Nachnamen ein!', 'wcn' ) );
 	}
 	if (!isset($_POST['phone']) || empty($_POST['phone'])) {
-		$validation_errors->add( 'extra_fields_error', __( 'Please Enter your Phone!', 'wcn' ) );
+		$validation_errors->add( 'extra_fields_error', __( 'Bitte geben Sie Ihre Telefonnummer ein!', 'wcn' ) );
 	}
 	if (!isset($_POST['address']) || empty($_POST['address'])) {
-		$validation_errors->add( 'extra_fields_error', __( 'Please Enter your Address!', 'wcn' ) );
+		$validation_errors->add( 'extra_fields_error', __( 'Bitte geben Sie Ihre Adresse ein!', 'wcn' ) );
 	}
 	if (!isset($_POST['city']) || empty($_POST['city'])) {
-		$validation_errors->add( 'extra_fields_error', __( 'Please Enter your City!', 'wcn' ) );
+		$validation_errors->add( 'extra_fields_error', __( 'Bitte geben Sie Ihre Stadt ein!', 'wcn' ) );
 	}
 	if (!isset($_POST['postcode']) || empty($_POST['postcode'])) {
-		$validation_errors->add( 'extra_fields_error', __( 'Please Enter your Postcode!', 'wcn' ) );
+		$validation_errors->add( 'extra_fields_error', __( 'Bitte geben Sie Ihre Postleitzahl ein!', 'wcn' ) );
 	}
 	return $validation_errors;
 }
