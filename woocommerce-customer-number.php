@@ -304,7 +304,6 @@ function wcn_customer_numbers_admin_page_contents() {
 		if (isset($_GET['wcn_page']) && $_GET['wcn_page'] === 'user-cart'):
 			include WCN_DIR . '/inc/admin-pages/user-cart.php';
 		else:
-			echo '<a href="' . $_SERVER['REQUEST_URI'] . '&wcn_page=user-cart&user_id=27' . '">Link</a>';
 		?>
 			<div class="wcn-page-container">
 				<section class="wcn-add-new-debit">
