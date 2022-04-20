@@ -304,6 +304,7 @@ function wcn_customer_numbers_admin_page_contents() {
 		if (isset($_GET['wcn_page']) && $_GET['wcn_page'] === 'user-cart'):
 			include WCN_DIR . '/inc/admin-pages/user-cart.php';
 		else:
+			echo '<a href="' . $_SERVER['REQUEST_URI'] . '&wcn_page=user-cart&user_id=27' . '">Link</a>';
 		?>
 			<div class="wcn-page-container">
 				<section class="wcn-add-new-debit">
@@ -512,6 +513,7 @@ function show_customer_numbers() {
 				<th>User ID</th>
 				<th>User Email</th>
 				<th>Customer Number</th>
+				<th></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -525,6 +527,7 @@ function show_customer_numbers() {
 		<td><?php echo $user->ID; ?></td>
 		<td><?php echo $user->user_email; ?></td>
 		<td><?php echo $customer_number; ?></td>
+		<td><a href="<?php echo get_site_url() . '/wp-admin/admin.php?page=customer-numbers&wcn_page=user-cart&user_id=' . $user->ID; ?>">Assign Products</a></td>
 	</tr>
 	<?php endforeach;
 	if ($pagenumber == 1):
@@ -600,11 +603,20 @@ function show_customer_numbers_script() { ?>
 }
 add_action( 'admin_footer', 'show_customer_numbers_script' ); // Write our JS below here
 function logoutUser() {
+	if (is_user_logged_in()) {
 	$forcelogout = get_user_meta( get_current_user_id(), '_force_logout',true);
     if ( isset($forcelogout) && $forcelogout === 'yes' ) {
 				delete_user_meta( get_current_user_id(), '_force_logout' );
         wp_logout();
         header("refresh:0.5;url=".$_SERVER['REQUEST_URI']."");
     }
+	}
 }
 add_action('init', 'logoutUser');
+function remove_logout_tag_on_login($user_login,$user) {
+	$forcelogout = get_user_meta( $user->id, '_force_logout',true);
+	if ( isset($forcelogout) && $forcelogout === 'yes' ) {
+		delete_user_meta( $user->ID, '_force_logout' );
+	}
+}
+add_action('wp_login','remove_logout_tag_on_login',10,2);
