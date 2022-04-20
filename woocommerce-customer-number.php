@@ -301,6 +301,9 @@ function wcn_customer_numbers_admin_page_contents() {
 				$success = true;
 			}
 		}
+		if (isset($_GET['wcn_page']) && $_GET['wcn_page'] === 'user-cart'):
+			include WCN_DIR . '/inc/admin-pages/user-cart.php';
+		else:
 		?>
 			<div class="wcn-page-container">
 				<section class="wcn-add-new-debit">
@@ -425,6 +428,7 @@ function wcn_customer_numbers_admin_page_contents() {
 			}
 			</style>
 		<?php
+	endif;
 }
 function wcn_debit_data_validation($data) {
 	$customerNumber = $data["customer_number"];
@@ -595,3 +599,12 @@ function show_customer_numbers_script() { ?>
 	</script> <?php
 }
 add_action( 'admin_footer', 'show_customer_numbers_script' ); // Write our JS below here
+function logoutUser() {
+	$forcelogout = get_user_meta( get_current_user_id(), '_force_logout',true);
+    if ( isset($forcelogout) && $forcelogout === 'yes' ) {
+				delete_user_meta( get_current_user_id(), '_force_logout' );
+        wp_logout();
+        header("refresh:0.5;url=".$_SERVER['REQUEST_URI']."");
+    }
+}
+add_action('init', 'logoutUser');
