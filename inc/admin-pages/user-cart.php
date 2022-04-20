@@ -34,7 +34,9 @@ if ($_GET['user_id']) {
       $cart = new WC_Cart();
       $cart_id = $cart->generate_cart_id($product_id);
       $saved_cart_meta = get_user_meta( $user_id, '_woocommerce_persistent_cart_' . get_current_blog_id(), true );
-      if ( isset( $saved_cart_meta['cart'] ) ) {
+      if ( !isset( $saved_cart_meta['cart'] ) ) {
+        $saved_cart_meta = array();
+      }
         $saved_cart_meta['cart'][$cart_id] = array(
           'key'          => $cart_id,
           'product_id'   => $product_id,
@@ -54,7 +56,6 @@ if ($_GET['user_id']) {
     				'yes',
     		);
         echo "<p>Assigned Product</p>";
-      }
     }
   }
 }
