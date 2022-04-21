@@ -502,8 +502,7 @@ function show_customer_numbers() {
 			$args['meta_query']['cnsearch'] = array(
 				'key' => 'customer_number',
 				'value' => $cn_search,
-				'type' => 'numeric',
-				'compare' => '=',
+				'compare' => 'LIKE',
 			);
 			break;
 			case 'name':
@@ -513,14 +512,14 @@ function show_customer_numbers() {
 				'firstname' => array(
 					'key' => 'first_name',
 					'value' => $name[0],
-					'compare' => '=',
+					'compare' => 'LIKE',
 				)
 			);
 			if (isset($name[1])) {
 				$args['meta_query']['cnsearch']['lastname'] = array(
 					'key' => 'last_name',
 					'value' => $name[1],
-					'compare' => '=',
+					'compare' => 'LIKE',
 				);
 			}
 			break;
@@ -528,14 +527,14 @@ function show_customer_numbers() {
 			$args['meta_query']['cnsearch'] = array(
 				'key' => 'billing_phone',
 				'value' => $cn_search,
-				'compare' => '=',
+				'compare' => 'LIKE',
 			);
 			break;
 			case 'social':
 			$args['meta_query']['cnsearch'] = array(
 				'key' => 'social_media_name',
 				'value' => $cn_search,
-				'compare' => '=',
+				'compare' => 'LIKE',
 			);
 			break;
 			default:
@@ -560,9 +559,8 @@ function show_customer_numbers() {
 	<table>
 		<thead>
 			<tr>
-				<th>ID</th>
-				<th>Name</th>
 				<th>Email</th>
+				<th>Name</th>
 				<th>Customer Number</th>
 				<th>Phone Number</th>
 				<th>FB or Insta Name</th>
@@ -577,9 +575,8 @@ function show_customer_numbers() {
 		$customer_number = get_user_meta($user->ID,'customer_number',true);
 		?>
 	<tr>
-		<td><?php echo $user->ID; ?></td>
-		<td><?php echo get_user_meta($user->ID,'first_name',true); ?> <?php echo get_user_meta($user->ID,'last_name',true); ?> </td>
 		<td><?php echo $user->user_email; ?></td>
+		<td><?php echo get_user_meta($user->ID,'first_name',true); ?> <?php echo get_user_meta($user->ID,'last_name',true); ?> </td>
 		<td><?php echo $customer_number; ?></td>
 		<td><?php echo get_user_meta($user->ID,'billing_phone',true); ?></td>
 		<td><?php echo get_user_meta($user->ID,'social_media_name',true); ?></td>
