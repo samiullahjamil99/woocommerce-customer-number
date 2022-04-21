@@ -340,7 +340,13 @@ function wcn_customer_numbers_admin_page_contents() {
 				<section class="wcn-show-customers">
 					<h1 class="wcn-section-title">Customers Overview</h1>
 					<form id="overview_filters">
-						<input type="text" name="cn_search" placeholder="Search by Customer Number">
+						<select name="filterby">
+							<option disabled value="">Filter by</option>
+							<option value="number">Customer Number</option>
+							<option value="name">Customer Name</option>
+							<option value="email">Customer Email</option>
+						</select>
+						<input type="text" name="cn_search" placeholder="Filter Term">
 						<input type="submit" value="Filter">
 					</form>
 					<div id="customers_overview">
@@ -478,6 +484,7 @@ function show_customer_numbers() {
 	$pagenumber = intval($_POST['paged']);
 	$postsperpage = intval($_POST['posts_per_page']);
 	$filters = $_POST['filters'];
+	$filterby = $filters['filterby'];
 	$cn_search = $filters['cn_search'];
 	$result = array();
 	$args = array(
@@ -489,12 +496,36 @@ function show_customer_numbers() {
 		)
 	);
 	if (!empty($cn_search)) {
-		$args['meta_query']['cnsearch'] = array(
-			'key' => 'customer_number',
-			'value' => $cn_search,
-			'type' => 'numeric',
-			'compare' => '=',
-		);
+		switch ($filterby) {
+			case 'number':
+			$args['meta_query']['cnsearch'] = array(
+				'key' => 'customer_number',
+				'value' => $cn_search,
+				'type' => 'numeric',
+				'compare' => '=',
+			);
+			break;
+			case 'name':
+			$name = explode(" ",$cn_search,2);
+			$args['meta_query']['cnsearch'] = array(
+				'relation' => 'AND',
+				'firstname' => array(
+					'key' => 'first_name',
+					'value' => $name[0],
+					'compare' => '=',
+				)
+			);
+			if (isset($name[1])) {
+				$args['meta_query']['cnsearch']['lastname'] = array(
+					'key' => 'last_name',
+					'value' => $name[1],
+					'compare' => '=',
+				);
+			}
+			break;
+			default:
+			break;
+		}
 	}
 	$args = wp_parse_args( $args );
   //$args['count_total'] = false;
@@ -503,14 +534,20 @@ function show_customer_numbers() {
 	if ($pagenumber == 1) {
 		$result['total_users'] = $user_search->get_total();
 	}
+	if ($filterby === "email") {
+		$user = get_user_by("email",$cn_search);
+		$users = array($user);
+		$result['total_users'] = 1;
+	}
 	ob_start();
 	if ($pagenumber == 1):
 	?>
 	<table>
 		<thead>
 			<tr>
-				<th>User ID</th>
-				<th>User Email</th>
+				<th>ID</th>
+				<th>Name</th>
+				<th>Email</th>
 				<th>Customer Number</th>
 				<th></th>
 			</tr>
@@ -524,6 +561,7 @@ function show_customer_numbers() {
 		?>
 	<tr>
 		<td><?php echo $user->ID; ?></td>
+		<td><?php echo get_user_meta($user->ID,'first_name',true); ?> <?php echo get_user_meta($user->ID,'last_name',true); ?> </td>
 		<td><?php echo $user->user_email; ?></td>
 		<td><?php echo $customer_number; ?></td>
 		<td><a href="<?php echo get_site_url() . '/wp-admin/admin.php?page=customer-numbers&wcn_page=user-cart&user_id=' . $user->ID; ?>">Assign Products</a></td>
@@ -549,7 +587,7 @@ function show_customer_numbers_script() { ?>
 	var filters_form = document.getElementById("overview_filters");
 	var filters = {};
 	jQuery(document).ready(function($) {
-		load_users(false);
+		load_users();
 		function load_users() {
 			var data = {
 				'paged': pageNumber,
@@ -593,6 +631,7 @@ function show_customer_numbers_script() { ?>
 			pageNumber = 1;
 			$("button#loadmore_customers").hide();
 			filters = {
+				'filterby': filters_form.filterby.value,
 				'cn_search': filters_form.cn_search.value,
 			}
 			load_users();
