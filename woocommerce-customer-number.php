@@ -345,6 +345,8 @@ function wcn_customer_numbers_admin_page_contents() {
 							<option value="number">Customer Number</option>
 							<option value="name">Customer Name</option>
 							<option value="email">Customer Email</option>
+							<option value="phone">Customer Phone Number</option>
+							<option value="social">Customer FB or Insta Name</option>
 						</select>
 						<input type="text" name="cn_search" placeholder="Filter Term">
 						<input type="submit" value="Filter">
@@ -399,7 +401,6 @@ function wcn_customer_numbers_admin_page_contents() {
 		    cursor: pointer;
 			}
 			section.wcn-show-customers {
-				max-width: 700px;
     		margin: auto;
 				margin-top: 25px;
 		    background-color: white;
@@ -523,6 +524,20 @@ function show_customer_numbers() {
 				);
 			}
 			break;
+			case 'phone':
+			$args['meta_query']['cnsearch'] = array(
+				'key' => 'billing_phone',
+				'value' => $cn_search,
+				'compare' => '=',
+			);
+			break;
+			case 'social':
+			$args['meta_query']['cnsearch'] = array(
+				'key' => 'social_media_name',
+				'value' => $cn_search,
+				'compare' => '=',
+			);
+			break;
 			default:
 			break;
 		}
@@ -549,6 +564,8 @@ function show_customer_numbers() {
 				<th>Name</th>
 				<th>Email</th>
 				<th>Customer Number</th>
+				<th>Phone Number</th>
+				<th>FB or Insta Name</th>
 				<th></th>
 			</tr>
 		</thead>
@@ -564,6 +581,8 @@ function show_customer_numbers() {
 		<td><?php echo get_user_meta($user->ID,'first_name',true); ?> <?php echo get_user_meta($user->ID,'last_name',true); ?> </td>
 		<td><?php echo $user->user_email; ?></td>
 		<td><?php echo $customer_number; ?></td>
+		<td><?php echo get_user_meta($user->ID,'billing_phone',true); ?></td>
+		<td><?php echo get_user_meta($user->ID,'social_media_name',true); ?></td>
 		<td><a href="<?php echo get_site_url() . '/wp-admin/admin.php?page=customer-numbers&wcn_page=user-cart&user_id=' . $user->ID; ?>">Assign Products</a></td>
 	</tr>
 	<?php endforeach;
