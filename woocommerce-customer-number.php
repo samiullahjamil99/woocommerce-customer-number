@@ -90,6 +90,7 @@ function wcn_show_customer_number_on_dashboard() {
 	$customer_number = get_user_meta($current_user->ID,'customer_number',true);
 	?>
 	<p>Ihre Kundennummer lautet <strong><?php echo $customer_number; ?></strong>.</p>
+	<p>In order to verify yourself, please communicate your customer by Whatsapp to the following number: 0176 2424 5365</p>
 	<?php
 }
 add_action('woocommerce_account_dashboard','wcn_show_customer_number_on_dashboard');
@@ -115,7 +116,7 @@ function wcn_validate_extra_register_fields( $username, $email, $validation_erro
 			 )
 			);
 			if ($user) {
-				$validation_errors->add( 'customer_number_error', __( 'Diese Nummer ist bereits jemandem zugewiesen!', 'wcn' ) );
+				$validation_errors->add( 'customer_number_error', __( 'A problem has occurred, please contact the seller via whatsapp: 0176 2424 5365 to clarfiy the problem.', 'wcn' ) );
 			}
 		}
 	} else {
@@ -167,7 +168,7 @@ function wcn_save_extra_register_fields($customer_id) {
 						array(
 								'key' => 'customer_number',
 								'compare' => '>=',
-								'value' => '4300',
+								'value' => '4500',
 								'type' => 'NUMERIC',
 						)
 					),
@@ -177,7 +178,7 @@ function wcn_save_extra_register_fields($customer_id) {
 				$max_cn = get_user_meta($user->ID,'customer_number',true);
 				$new_cn = intval($max_cn) + 1;
 			} else {
-				$new_cn = 4300;
+				$new_cn = 4500;
 			}
 			$customer_number = strval($new_cn);
 		} elseif ($_POST['social_media_source'] === 'in') {
@@ -195,6 +196,12 @@ function wcn_save_extra_register_fields($customer_id) {
 								'key' => 'customer_number_in',
 								'compare' => 'EXISTS'
 						),
+						array(
+								'key' => 'customer_number_in',
+								'compare' => '>=',
+								'value' => '300',
+								'type' => 'NUMERIC',
+						)
 					),
 				)
 			));
@@ -202,10 +209,10 @@ function wcn_save_extra_register_fields($customer_id) {
 				$max_cn = get_user_meta($user->ID,'customer_number_in',true);
 				$new_cn = intval($max_cn) + 1;
 			} else {
-				$new_cn = 1;
+				$new_cn = 300;
 			}
 			update_user_meta( $customer_id, 'customer_number_in', sanitize_text_field( strval($new_cn) ) );
-			$customer_number = strval($new_cn) . 'IN';
+			$customer_number = 'IN' . strval($new_cn);
 		}
 	}
 	if ($customer_number !== '') {
