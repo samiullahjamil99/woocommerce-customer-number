@@ -90,7 +90,7 @@ function wcn_show_customer_number_on_dashboard() {
 	$customer_number = get_user_meta($current_user->ID,'customer_number',true);
 	?>
 	<p>Ihre Kundennummer lautet <strong><?php echo $customer_number; ?></strong>.</p>
-	<p>In order to verify yourself, please communicate your customer by Whatsapp to the following number: 0176 2424 5365</p>
+	<p>Um sich zu verifizieren, teilen Sie Ihrem Kunden bitte per Whatsapp folgende Nummer mit: 0176 2424 5365</p>
 	<?php
 }
 add_action('woocommerce_account_dashboard','wcn_show_customer_number_on_dashboard');
@@ -116,7 +116,7 @@ function wcn_validate_extra_register_fields( $username, $email, $validation_erro
 			 )
 			);
 			if ($user) {
-				$validation_errors->add( 'customer_number_error', __( 'A problem has occurred, please contact the seller via whatsapp: 0176 2424 5365 to clarfiy the problem.', 'wcn' ) );
+				$validation_errors->add( 'customer_number_error', __( 'Es ist ein Problem aufgetreten, bitte kontaktieren Sie den Verkäufer über Whatsapp: 0176 2424 5365, um das Problem zu klären.', 'wcn' ) );
 			}
 		}
 	} else {
