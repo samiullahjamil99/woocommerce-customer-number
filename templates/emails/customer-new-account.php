@@ -27,6 +27,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 	<p><a href="<?php echo esc_attr( $set_password_url ); ?>"><?php printf( esc_html__( 'Click here to set your new password.', 'woocommerce' ) ); ?></a></p>
 <?php endif; ?>
 <p><?php printf( esc_html__( 'Your customer number is %s, please remember the number well this serves to our communication and keep the email with the Number well.' ), '<strong>' . esc_html( $customer_number ) . '</strong>' ); ?></p>
+<p>To verify, please share your customer number via Whatsapp to the following number: 0176 2424 5365</p>
 <?php
 /**
  * Show user-defined additional content - this is set in each email's settings.
