@@ -147,7 +147,7 @@ function wcn_validate_extra_register_fields( $username, $email, $validation_erro
 add_action( 'woocommerce_register_post', 'wcn_validate_extra_register_fields', 10, 3 );
 function wcn_save_extra_register_fields($customer_id) {
 	$customer_number = '';
-	if ( isset( $_POST['customer_number'] ) && !empty($_POST['customer_number']) ) {
+	if ( isset( $_POST['customer_number'] ) && !empty($_POST['customer_number'] && isset($_POST['customer_number_present']) && $_POST['customer_number_present'] === "yes") ) {
 		$customer_number = $_POST['customer_number'];
 	} else {
 		if ($_POST['social_media_source'] === 'fb') {
